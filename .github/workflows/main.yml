@@ -36,15 +36,13 @@ jobs:
           sudo apt update
           sudo apt install -y git
 
-      - name: Build using Docker
-        run: |
-          chmod +x docker-build.sh
-          ./docker-build.sh "-d ${{ github.event.inputs.codename }} [-r ${{ github.event.inputs.build_mode }}]"
-
-      - name: Build natively
+      - name: Set up environment
         run: |
           chmod +x setup_env.sh
           ./setup_env.sh -p apt
+
+      - name: Build UEFI
+        run: |
           chmod +x build_uefi.sh
           ./build_uefi.sh -d ${{ github.event.inputs.codename }} [-r ${{ github.event.inputs.build_mode }}]
 
