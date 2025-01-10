@@ -1,0 +1,54 @@
+name: Build UEFI Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      codename:
+        description: 'Codename for the build'
+        required: true
+        default: 'default-codename'
+      build_mode:
+        description: 'Build mode (optional)'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Set up Python 3.10
+        run: |
+          sudo apt update
+          sudo apt install -y python3.10 python3.10-distutils
+          sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
+          sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+          python --version
+
+      - name: Install Git
+        run: |
+          sudo apt update
+          sudo apt install -y git
+
+      - name: Build using Docker
+        run: |
+          chmod +x docker-build.sh
+          ./docker-build.sh "-d ${{ github.event.inputs.codename }} [-r ${{ github.event.inputs.build_mode }}]"
+
+      - name: Build natively
+        run: |
+          chmod +x setup_env.sh
+          ./setup_env.sh -p apt
+          chmod +x build_uefi.sh
+          ./build_uefi.sh -d ${{ github.event.inputs.codename }} [-r ${{ github.event.inputs.build_mode }}]
+
+      - name: List build artifacts
+        run: |
+          echo "Build artifacts:"
+          ls -l *.img *.tar *.bin
