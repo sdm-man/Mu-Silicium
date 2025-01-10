@@ -49,4 +49,5 @@ jobs:
       - name: List build artifacts
         run: |
           echo "Build artifacts:"
-          ls -l *.img *.tar *.bin
+          shopt -s nullglob
+          ls -l *.img *.tar *.bin || echo "No artifacts found."
